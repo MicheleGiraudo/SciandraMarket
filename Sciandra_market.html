@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sciandra Market</title>
+    <!-- Importazione font Inter da Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            line-height: 1.5;
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Form di ricerca */
+        form {
+            background-color: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        form label {
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+        }
+
+        form input[type="text"] {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        form input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        form button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        form button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Layout principale a 2 colonne (Vetrina a sinistra, Carrello a destra) */
+        .main-container {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+        }
+
+        /* Vetrina (occupa lo spazio rimanente a sinistra) */
+        #vetrina {
+            flex: 1;
+            margin-bottom: 32px;
+        }
+
+        #vetrina h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        /* Card reparto e card prodotto */
+        #vetrina > div {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #vetrina > div:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        #vetrina h3 {
+            font-size: 1.15rem;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        #vetrina img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 8px 0;
+            object-fit: cover;
+        }
+
+        #vetrina p {
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        #vetrina hr {
+            display: none;
+        }
+
+        #vetrina button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        #vetrina button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Carrello (fissato sulla destra) */
+        #carrello {
+            width: 320px;
+            position: sticky;
+            top: 24px;
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        #carrello h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        #carrello p {
+            padding: 10px 14px;
+            background-color: var(--bg-body);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        .empty-cart {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <label>Cerca...</label>
+        <input type="text" id="nome_cerca">
+        <button id="pulsante_cerca">Cerca</button>
+    </form>
+
+    <!-- Layout a due colonne -->
+    <div class="main-container">
+        <div id="vetrina"></div>
+        <div id="carrello">
+            <h1>Carrello</h1>
+            <p class="empty-cart">Il carrello è vuoto</p>
+        </div>
+    </div>
+
+    <script>
+        const vetrina = document.getElementById("vetrina") 
+        const carr = document.getElementById("carrello")
+        const cerca = document.getElementById("pulsante_cerca")
+        const elemento_cerca = document.getElementById("nome_cerca")
+        let presenti = []
+        let tro = []
+
+        class Prodotto {
+            constructor(codice, nome, descrizione, prezzo, unitaMisura, quantita, reparto, responsabile, cellulare, sconto) {
+                this.codice = codice
+                this.nome = nome
+                this.descrizione = descrizione
+                this.prezzo = prezzo
+                this.quantita = quantita
+                this.reparto = reparto
+                this.responsabile = responsabile
+                this.cellulare = cellulare
+                this.sconto = sconto
+            }
+
+            visualizza() {
+                return "codice: " + this.codice + " nome: " + this.nome + " descrizione: " + this.descrizione + " prezzo: " + this.prezzo + 
+                " quantita: " + this.quantita + " reparto: " + this.reparto + " responsabile: " + 
+                this.responsabile + " cellulare: " + this.cellulare 
+            }
+        }
+
+        class Supermercato {
+            constructor(nome, indirizzo) {
+                this.nome = nome
+                this.indirizzo = indirizzo
+                this.prodotti = []
+            }
+
+            aggiungiProdotto(prodotto) {
+                this.prodotti.push(prodotto)
+            }
+
+            caricaMagazzino(prodotto){
+                if(prodotto instanceof Prodotto){
+                    this.prodotti.push(prodotto)
+                }
+            }
+
+            visualizza() {
+                return "nome: " + this.nome + " indirizzo: " + this.indirizzo 
+            }
+        }
+
+        // Funzione ausiliaria per aggiungere un elemento al carrello (pila / LIFO)
+        function aggiungiAElementoCarrello(element) {
+            const esistenteIndex = presenti.findIndex(item => item.id === element.id_articolo)
+
+            if(esistenteIndex !== -1){
+                const elementoEsistente = presenti.splice(esistenteIndex, 1)[0]
+                elementoEsistente.quantita += 1
+                presenti.unshift(elementoEsistente)
+            } else {
+                const oggetto = {
+                    id: element.id_articolo,
+                    nome: element.articolo,
+                    quantita: 1,
+                    img: element.immagine
+                }
+                presenti.unshift(oggetto)
+            }
+            
+            aggiornaCarrello()
+        }
+
+        // Funzione per renderizzare i contenuti del carrello
+        function aggiornaCarrello() {
+            carr.innerHTML = "<h1>Carrello</h1>"
+            if (presenti.length === 0) {
+                carr.innerHTML += '<p class="empty-cart">Il carrello è vuoto</p>'
+            } else {
+                presenti.forEach(item => {
+                    const riga = document.createElement("p")
+                    riga.innerHTML = `<font size="5">${item.nome} x${item.quantita}</font>`
+                    carr.appendChild(riga)
+                })
+            }
+        }
+
+        let url = "./json_reparti.json"
+
+        fetch(url)
+            .then(response => response.json()) 
+            .then(dati => {
+
+                const magazzino = new Supermercato("Sciandra Market", "Via Roma 10")
+
+                dati.magazzino.forEach(element => {
+                    const prodotto = new Prodotto(
+                        element.id_articolo, 
+                        element.articolo, 
+                        element.descrizione, 
+                        element.prezzo, 
+                        "", 
+                        element.quantita, 
+                        element.reparto, 
+                        element.responsabile, 
+                        element.cell
+                    )
+
+                    magazzino.caricaMagazzino(prodotto)
+                })
+
+                //----------------------------ESTRAZIONE DEI REPARTI UNICI------------------------------------------
+                const repartiUnici = []
+                dati.magazzino.forEach(element => {
+                    if (!repartiUnici.includes(element.reparto)) {
+                        repartiUnici.push(element.reparto)
+                    }
+                })
+
+                // Funzione per visualizzare le card dei reparti nella home page
+                function mostraReparti() {
+                    vetrina.innerHTML = "<h2>Reparti del Supermercato</h2>"
+                    
+                    repartiUnici.forEach(rep => {
+                        const cardReparto = document.createElement("div")
+                        cardReparto.style.cursor = "pointer"
+                        
+                        cardReparto.innerHTML = `
+                            <h3>REPARTO: ${rep.toUpperCase()}</h3>
+                            <button><font size="4"><b>MOSTRA PRODOTTI</b></font></button>
+                            <hr><br>
+                        `
+
+                        cardReparto.addEventListener("click", function() {
+                            mostraProdottiReparto(rep)
+                        })
+
+                        vetrina.appendChild(cardReparto)
+                    })
+                }
+
+                //-----------------------MOSTRA PRODOTTI DI UN REPARTO SPECIFICO---------------------------------------
+                function mostraProdottiReparto(nomeReparto) {
+                    vetrina.innerHTML = `<h2>Prodotti Reparto: ${nomeReparto.toUpperCase()}</h2>`
+                    
+                    const tastoTorna = document.createElement("button")
+                    tastoTorna.innerHTML = "<b><-- Torna ai Reparti</b>"
+                    tastoTorna.addEventListener("click", function() {
+                        mostraReparti()
+                    })
+                    vetrina.appendChild(tastoTorna)
+                    vetrina.appendChild(document.createElement("br"))
+                    vetrina.appendChild(document.createElement("br"))
+
+                    const prodottiFiltrati = dati.magazzino.filter(item => item.reparto === nomeReparto)
+
+                    prodottiFiltrati.forEach(element => {
+                        const card = document.createElement('div')
+
+                        card.innerHTML = `
+                            <h3>${element.articolo}</h3>
+                            <img src="${element.immagine}" alt="${element.articolo}" width="300"><br>
+                            <p>${element.descrizione}</p>
+                            <font size="5"><b>Prezzo: €${element.prezzo}</b></font><br><br>
+                        `        
+
+                        const carrelloBtn = document.createElement("button")
+                        carrelloBtn.innerHTML = "<font size='4'><b>AGGIUNGI AL CARRELLO</b></font>"
+                        
+                        card.appendChild(carrelloBtn)
+                        vetrina.appendChild(card)
+
+                        carrelloBtn.addEventListener("click", function(e){
+                            e.preventDefault();
+                            aggiungiAElementoCarrello(element)
+                        })
+                    })
+                }
+
+                // Mostra i reparti al caricamento iniziale della pagina
+                mostraReparti()
+
+                //------------------------------------------CERCA------------------------------------------------------
+                cerca.addEventListener("click", function(e){
+                    e.preventDefault();
+                    vetrina.innerHTML = ""; 
+                    tro = []; 
+
+                    const testoCercato = elemento_cerca.value.trim().toLowerCase();
+
+                    if (testoCercato === "") {
+                        mostraReparti();
+                        return;
+                    }
+
+                    // .includes() verificare se una stringa o un array contiene un determinato elemento o sotto-stringa
+                    dati.magazzino.forEach(element => {
+                        if (element.articolo.toLowerCase().includes(testoCercato)) {
+                            tro.push(element)
+                        }
+                    })
+
+                    vetrina.innerHTML = `<h2>Risultati della ricerca per: "${elemento_cerca.value}"</h2>`
+
+                    const tastoTorna = document.createElement("button")
+                    tastoTorna.innerHTML = "<b><-- Torna ai Reparti</b>"
+                    tastoTorna.addEventListener("click", function() {
+                        mostraReparti()
+                    })
+                    vetrina.appendChild(tastoTorna)
+                    vetrina.appendChild(document.createElement("br"))
+                    vetrina.appendChild(document.createElement("br"))
+
+                    if (tro.length === 0) {
+                        vetrina.innerHTML += "<p>Nessun oggetto trovato</p>"
+                    } else {
+                        tro.forEach(element => {
+                            const card = document.createElement("div")
+
+                            card.innerHTML = `
+                                <h3>${element.articolo}</h3>
+                                <img src="${element.immagine}" alt="${element.articolo}" width="300"><br>
+                                <p>${element.descrizione}</p>
+                                <font size="5"><b>Prezzo: €${element.prezzo}</b></font><br><br>
+                            `
+
+                            const carrelloBtn = document.createElement("button")
+                            carrelloBtn.innerHTML = "<font size='4'><b>AGGIUNGI AL CARRELLO</b></font>"
+
+                            card.appendChild(carrelloBtn)
+                            vetrina.appendChild(card)
+
+                            carrelloBtn.addEventListener("click", function(e){
+                                e.preventDefault();
+                                aggiungiAElementoCarrello(element)
+                            })
+                        })
+                    }
+                })
+
+            })
+            .catch(error => {
+                console.error('Si è verificato un errore:', error);
+            });
+    </script>
+</body>
+</html>
